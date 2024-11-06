@@ -40,7 +40,6 @@ export default function Users() {
   async function handleAddOrUpdateUser() {
     try {
       if (isEditing && updateUserData.id) {
-        console.log("Updating user:", updateUserData);
         const result = await updateUser(updateUserData.id, updateUserData);
         console.log(result.message);
       } else {
@@ -72,7 +71,6 @@ export default function Users() {
   }
 
   function handleEditUser(user: User) {
-    console.log("Editing user:", user);
     setUpdateUserData({
       id: user._id!,
       name: user.name,

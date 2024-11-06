@@ -42,7 +42,6 @@ export default function Cars() {
   async function handleAddOrUpdateCar() {
     try {
       if (isEditing && updateCarData.id) {
-        console.log("Updating car:", updateCarData);
         const result = await updateCar(updateCarData.id, updateCarData);
         console.log(result.message);
       } else {
@@ -74,7 +73,6 @@ export default function Cars() {
   }
 
   function handleEditCar(car: Car) {
-    console.log("Editing car:", car);
     setUpdateCarData({
       id: car._id!,
       model: car.model,

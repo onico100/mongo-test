@@ -1,27 +1,33 @@
 import { NextResponse } from "next/server";
-import { connectDatabase } from "@/Services/mongo";
-import { ObjectId } from "mongodb";
+import { connectDatabase, updateDocument } from "@/Services/mongo";
 
 export async function PATCH(request: Request) {
   const client = await connectDatabase();
-  const data = await request.json();
 
   try {
-    const { id, ...updateData } = data; // Assuming `data` contains an `id` and the fields to update
-    const db = client.db("db01");
-    const result = await db
-      .collection("users")
-      .updateOne({ _id: new ObjectId(id) }, { $set: updateData });
+    // Parse the request body for ID and document data
+    const body = await request.json();
+    const { id, ...document } = body;
 
-    if (result.modifiedCount === 0) {
-      return NextResponse.json({
-        message: "No document found or data unchanged",
-      });
+    if (!id) {
+      return NextResponse.json({ message: "ID not provided" }, { status: 400 });
+    }
+
+    const result = await updateDocument(client, "users", id, document);
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json(
+        { message: "Document not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({ message: "Document updated successfully" });
   } catch (error) {
-    return NextResponse.json({ message: "Error updating document", error });
+    return NextResponse.json(
+      { message: "Error updating document", error },
+      { status: 500 }
+    );
   } finally {
     client.close();
   }
