@@ -4,17 +4,19 @@
   padding: 20px;
   font-family: Arial, sans-serif;
   background-color: #f9f9f9;
-  color: #333;
+  color: black;
 }
 
 .container h1 {
   text-align: center;
-  color: #333;
+  color: #690164;
+  font-size: 24px;
 }
 
 .container h2 {
   margin-top: 20px;
-  color: #555;
+  color: #690164;
+  font-size: 18px;
 }
 
 .container input {
@@ -30,13 +32,13 @@
   margin: 5px;
   border: none;
   border-radius: 5px;
-  background-color: #0070f3;
+  background-color: #ed85e8;
   color: white;
   cursor: pointer;
 }
 
 .container button:hover {
-  background-color: #005bb5;
+  background-color: #690164;
 }
 
 .userList {

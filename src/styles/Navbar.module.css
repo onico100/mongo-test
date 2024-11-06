@@ -1,7 +1,7 @@
 /* styles/Navbar.module.css */
 .navbar {
-  background-color: #0070f3;
-  padding: 10px;
+  background-color: #ed85e8;
+  padding: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -27,4 +27,5 @@
 
 .navLinks a:hover {
   text-decoration: underline;
+  color: black;
 }
