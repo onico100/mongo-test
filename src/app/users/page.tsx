@@ -1,4 +1,3 @@
-// app/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,9 +8,10 @@ import {
   updateUser,
   deleteUser,
 } from "@/Services/usersService";
-import styles from "../../styles/Users.module.css"; // Import your CSS module
+import styles from "../../styles/Users.module.css";
+import UserCard from "@/components/UserCard";
 
-export default function Home() {
+export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [newUser, setNewUser] = useState<User>({
     name: "",
@@ -22,6 +22,7 @@ export default function Home() {
     name: "",
     phone: "",
   });
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -36,34 +37,48 @@ export default function Home() {
     }
   }
 
-  async function handleAddUser() {
+  async function handleAddOrUpdateUser() {
     try {
-      const result = await insertUser(newUser);
-      console.log(result.message);
+      if (isEditing && updateUserData.id) {
+        console.log("Updating user:", updateUserData);
+        const result = await updateUser(updateUserData.id, updateUserData);
+        console.log(result.message);
+      } else {
+        console.log("Adding user:", newUser);
+        await insertUser(newUser);
+        console.log("User added successfully.");
+      }
       fetchUsers();
+      resetForm();
     } catch (error) {
-      console.error("Error inserting user:", error);
+      console.error("Error adding/updating user:", error);
     }
   }
 
-  async function handleUpdateUser() {
-    try {
-      const result = await updateUser(updateUserData.id, updateUserData);
-      console.log(result.message);
-      fetchUsers();
-    } catch (error) {
-      console.error("Error updating user:", error);
-    }
+  function resetForm() {
+    setNewUser({ name: "", phone: "" });
+    setUpdateUserData({ id: "", name: "", phone: "" });
+    setIsEditing(false);
   }
 
   async function handleDeleteUser(id: string) {
     try {
-      const result = await deleteUser(id);
-      console.log(result.message);
+      await deleteUser(id);
+      console.log("User deleted successfully.");
       fetchUsers();
     } catch (error) {
       console.error("Error deleting user:", error);
     }
+  }
+
+  function handleEditUser(user: User) {
+    console.log("Editing user:", user);
+    setUpdateUserData({
+      id: user._id!,
+      name: user.name,
+      phone: user.phone,
+    });
+    setIsEditing(true);
   }
 
   return (
@@ -71,66 +86,48 @@ export default function Home() {
       <h1>Welcome to Next.js - User Collection</h1>
 
       <div>
-        <h2>Add User</h2>
+        <h2>{isEditing ? "Edit User" : "Add User"}</h2>
         <input
           type="text"
           placeholder="Name"
-          value={newUser.name}
-          onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Phone Number"
-          value={newUser.phone}
-          onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
-        />
-        <button onClick={handleAddUser}>Add User</button>
-      </div>
-
-      <div>
-        <h2>Update User</h2>
-        <input
-          type="text"
-          placeholder="User ID"
-          value={updateUserData.id}
+          value={isEditing ? updateUserData.name : newUser.name}
           onChange={(e) =>
-            setUpdateUserData({ ...updateUserData, id: e.target.value })
-          }
-        />
-        <input
-          type="text"
-          placeholder="Name"
-          value={updateUserData.name}
-          onChange={(e) =>
-            setUpdateUserData({ ...updateUserData, name: e.target.value })
+            isEditing
+              ? setUpdateUserData({ ...updateUserData, name: e.target.value })
+              : setNewUser({ ...newUser, name: e.target.value })
           }
         />
         <input
           type="text"
           placeholder="Phone Number"
-          value={updateUserData.phone}
+          value={isEditing ? updateUserData.phone : newUser.phone}
           onChange={(e) =>
-            setUpdateUserData({
-              ...updateUserData,
-              phone: e.target.value,
-            })
+            isEditing
+              ? setUpdateUserData({
+                  ...updateUserData,
+                  phone: e.target.value,
+                })
+              : setNewUser({ ...newUser, phone: e.target.value })
           }
         />
-        <button onClick={handleUpdateUser}>Update User</button>
+        <button onClick={handleAddOrUpdateUser}>
+          {isEditing ? "Update User" : "Add User"}
+        </button>
+        {isEditing && <button onClick={resetForm}>Cancel Edit</button>}
       </div>
 
       <div>
         <h2>All Users</h2>
-        <ul className={styles.userList}>
+        <div className={styles.userList}>
           {users.map((user) => (
-            <li key={user._id} className={styles.userItem}>
-              <strong>{user.name}</strong> -number: {user.phone}
-              <button onClick={() => handleDeleteUser(user._id!)}>
-                Delete
-              </button>
-            </li>
+            <UserCard
+              key={user._id}
+              user={user}
+              onEdit={handleEditUser}
+              onDelete={handleDeleteUser}
+            />
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   );

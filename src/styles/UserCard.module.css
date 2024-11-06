@@ -1,0 +1,13 @@
+/* styles/CarCard.module.css */
+.userCard {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+.userCard h3 {
+  margin: 0;
+}
+.userCard button {
+  margin-right: 0.5rem;
+}

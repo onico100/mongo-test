@@ -1,4 +1,3 @@
-// app/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,9 +8,10 @@ import {
   updateCar,
   deleteCar,
 } from "@/Services/carsService";
-import styles from "../../styles/Cars.module.css"; // Import your CSS module
+import styles from "../../styles/Cars.module.css";
+import CarCard from "@/components/CarCard";
 
-export default function Home() {
+export default function Cars() {
   const [cars, setCars] = useState<Car[]>([]);
   const [newCar, setNewCar] = useState<Car>({
     model: "",
@@ -24,6 +24,7 @@ export default function Home() {
     plate_number: "",
     color: "",
   });
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     fetchCars();
@@ -38,34 +39,49 @@ export default function Home() {
     }
   }
 
-  async function handleAddCar() {
+  async function handleAddOrUpdateCar() {
     try {
-      const result = await insertCar(newCar);
-      console.log(result.message);
+      if (isEditing && updateCarData.id) {
+        console.log("Updating car:", updateCarData);
+        const result = await updateCar(updateCarData.id, updateCarData);
+        console.log(result.message);
+      } else {
+        console.log("Adding car:", newCar);
+        await insertCar(newCar);
+        console.log("Car added successfully.");
+      }
       fetchCars();
+      resetForm();
     } catch (error) {
-      console.error("Error inserting car:", error);
+      console.error("Error adding/updating car:", error);
     }
   }
 
-  async function handleUpdateCar() {
-    try {
-      const result = await updateCar(updateCarData.id, updateCarData);
-      console.log(result.message);
-      fetchCars();
-    } catch (error) {
-      console.error("Error updating car:", error);
-    }
+  function resetForm() {
+    setNewCar({ model: "", plate_number: "", color: "" });
+    setUpdateCarData({ id: "", model: "", plate_number: "", color: "" });
+    setIsEditing(false);
   }
 
   async function handleDeleteCar(id: string) {
     try {
-      const result = await deleteCar(id);
-      console.log(result.message);
+      await deleteCar(id);
+      console.log("Car deleted successfully.");
       fetchCars();
     } catch (error) {
       console.error("Error deleting car:", error);
     }
+  }
+
+  function handleEditCar(car: Car) {
+    console.log("Editing car:", car);
+    setUpdateCarData({
+      id: car._id!,
+      model: car.model,
+      plate_number: car.plate_number,
+      color: car.color,
+    });
+    setIsEditing(true);
   }
 
   return (
@@ -73,78 +89,58 @@ export default function Home() {
       <h1>Welcome to Next.js - Car Collection</h1>
 
       <div>
-        <h2>Add Car</h2>
+        <h2>{isEditing ? "Edit Car" : "Add Car"}</h2>
         <input
           type="text"
           placeholder="Model"
-          value={newCar.model}
-          onChange={(e) => setNewCar({ ...newCar, model: e.target.value })}
-        />
-        <input
-          type="text"
-          placeholder="Plate Number"
-          value={newCar.plate_number}
+          value={isEditing ? updateCarData.model : newCar.model}
           onChange={(e) =>
-            setNewCar({ ...newCar, plate_number: e.target.value })
-          }
-        />
-        <input
-          type="text"
-          placeholder="Color"
-          value={newCar.color}
-          onChange={(e) => setNewCar({ ...newCar, color: e.target.value })}
-        />
-        <button onClick={handleAddCar}>Add Car</button>
-      </div>
-
-      <div>
-        <h2>Update Car</h2>
-        <input
-          type="text"
-          placeholder="Car ID"
-          value={updateCarData.id}
-          onChange={(e) =>
-            setUpdateCarData({ ...updateCarData, id: e.target.value })
-          }
-        />
-        <input
-          type="text"
-          placeholder="Model"
-          value={updateCarData.model}
-          onChange={(e) =>
-            setUpdateCarData({ ...updateCarData, model: e.target.value })
+            isEditing
+              ? setUpdateCarData({ ...updateCarData, model: e.target.value })
+              : setNewCar({ ...newCar, model: e.target.value })
           }
         />
         <input
           type="text"
           placeholder="Plate Number"
-          value={updateCarData.plate_number}
+          value={isEditing ? updateCarData.plate_number : newCar.plate_number}
           onChange={(e) =>
-            setUpdateCarData({ ...updateCarData, plate_number: e.target.value })
+            isEditing
+              ? setUpdateCarData({
+                  ...updateCarData,
+                  plate_number: e.target.value,
+                })
+              : setNewCar({ ...newCar, plate_number: e.target.value })
           }
         />
         <input
           type="text"
           placeholder="Color"
-          value={updateCarData.color}
+          value={isEditing ? updateCarData.color : newCar.color}
           onChange={(e) =>
-            setUpdateCarData({ ...updateCarData, color: e.target.value })
+            isEditing
+              ? setUpdateCarData({ ...updateCarData, color: e.target.value })
+              : setNewCar({ ...newCar, color: e.target.value })
           }
         />
-        <button onClick={handleUpdateCar}>Update Car</button>
+        <button onClick={handleAddOrUpdateCar}>
+          {isEditing ? "Update Car" : "Add Car"}
+        </button>
+        {isEditing && <button onClick={resetForm}>Cancel Edit</button>}
       </div>
 
       <div>
         <h2>All Cars</h2>
-        <ul className={styles.carList}>
+        <div className={styles.carList}>
           {cars.map((car) => (
-            <li key={car._id} className={styles.carItem}>
-              <strong>{car.model}</strong> - Plate: {car.plate_number}, Color:{" "}
-              {car.color}
-              <button onClick={() => handleDeleteCar(car._id!)}>Delete</button>
-            </li>
+            <CarCard
+              key={car._id}
+              car={car}
+              onEdit={handleEditCar}
+              onDelete={handleDeleteCar}
+            />
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   );
