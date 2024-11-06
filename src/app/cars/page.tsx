@@ -8,7 +8,7 @@ import {
   insertCar,
   updateCar,
   deleteCar,
-} from "../Services/carsService";
+} from "@/Services/carsService";
 import styles from "../../styles/Cars.module.css"; // Import your CSS module
 
 export default function Home() {

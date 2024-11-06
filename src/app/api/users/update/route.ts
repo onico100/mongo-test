@@ -10,7 +10,7 @@ export async function PATCH(request: Request) {
     const { id, ...updateData } = data; // Assuming `data` contains an `id` and the fields to update
     const db = client.db("db01");
     const result = await db
-      .collection("cars")
+      .collection("users")
       .updateOne({ _id: new ObjectId(id) }, { $set: updateData });
 
     if (result.modifiedCount === 0) {

@@ -14,7 +14,7 @@ export async function DELETE(request: Request) {
   try {
     const db = client.db("db01");
     const result = await db
-      .collection("cars")
+      .collection("users")
       .deleteOne({ _id: new ObjectId(id) });
 
     if (result.deletedCount === 0) {
